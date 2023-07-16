@@ -1,12 +1,21 @@
 # Libraries used
 import pygame
 import os
-import Pygame_Basic_code as p
 import random as r
+
+
+# Predefined functions
+
+def create_window(WIDTH, HEIGHT, CAPTION):
+    print(WIDTH, HEIGHT)
+    window = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption(CAPTION)
+    return window
+
 
 # To create window w/ dimensions and caption
 
-window = p.create_window(900, 900, " bharat's game")
+window = create_window(900, 900, " bharat's game")
 
 # Variables declared
 speedoffb = 15
