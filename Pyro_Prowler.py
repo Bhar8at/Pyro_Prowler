@@ -31,7 +31,7 @@ mc = pygame.transform.scale(mc_c, (50, 45))
 BLACK = (0, 0, 0)
 
 # Bullets
-max_balls = 10
+max_balls = 3
 balls = []
 ball = pygame.image.load(os.path.join("dodge_boms_assets", "fireball-png-pic-25.png"))
 ball = pygame.transform.scale(ball, (50, 45))
@@ -56,7 +56,6 @@ end = pygame.transform.scale(end, (500, 400))
 
 def endgame(score):
     run = True
-    print(score)
     while run:
         # to check for quit
         for event in pygame.event.get():
@@ -64,6 +63,7 @@ def endgame(score):
                 run = False
         window.fill(BLACK)
         window.blit(end, (200, 200))
+        window.blit(score, (400, 400))
         pygame.display.update()
     pygame.quit()
 
@@ -92,14 +92,13 @@ def main():
             i.y += speedoffb
             if i.y > 900:
                 balls.remove(i)
-                score += 0.25
+                score += max_balls**-1
             if i.colliderect(mc_hit):
                 run = False
-                endgame(score)
-
+                endgame(Scoreboard)
         # Scoreboard
 
-        Scoreboard = text_font.render(f"{score}", 1, (255, 255, 255))
+        Scoreboard = text_font.render(f"{round(score)}", 1, (255, 255, 255))
 
         # Keyboard movements for mc
         key_pressed = pygame.key.get_pressed()
