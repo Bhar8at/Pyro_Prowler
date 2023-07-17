@@ -2,9 +2,13 @@
 import pygame
 import os
 import random as r
-pygame.init()
 import time
+pygame.init()
+pygame.font.init()
+
 # Predefined functions
+
+
 
 def create_window(WIDTH, HEIGHT, CAPTION):
     window = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -32,12 +36,12 @@ BLACK = (0, 0, 0)
 max_balls = 3
 balls = []
 ball = pygame.image.load(os.path.join("dodge_boms_assets", "fireball-png-pic-25.png"))
-ball = pygame.transform.scale(ball, (50, 45))
+ball = pygame.transform.scale(ball, (100, 90))
 
 # Main page sprites
 mainpage = pygame.image.load(os.path.join("dodge_boms_assets", "Mainpage.png"))
-playbutton = pygame.image.load(os.path.join("dodge_boms_assets","playbutton.png"))
-playbutton = pygame.transform.scale(playbutton, (200,100))
+playbutton = pygame.image.load(os.path.join("dodge_boms_assets", "playbutton.png"))
+playbutton = pygame.transform.scale(playbutton, (200, 100))
 
 
 # Window Paint
@@ -54,25 +58,49 @@ def game_window(mc_hit, mcc, balls, score):
 
 # End page
 end = pygame.image.load(os.path.join("dodge_boms_assets", "loserpage.png"))
-end = pygame.transform.scale(end, (500, 400))
+end = pygame.transform.scale(end, (600, 400))
+tryagain = pygame.image.load(os.path.join("dodge_boms_assets", "tryagain.png"))
+tryagain = pygame.transform.scale(tryagain, (200, 100))
+mainmenu = pygame.image.load(os.path.join("dodge_boms_assets", "mainmenu.png"))
+mainmenu = pygame.transform.scale(mainmenu, (200, 100))
 
 
 def endgame(score):
+    global balls
+    balls = []
+    tryagain_hit = pygame.Rect(365, 600, 200, 100)
+    mainmenu_hit = pygame.Rect(365, 800, 200, 100)
     run = True
     while run:
+        window.fill(BLACK)
+        window.blit(end, (200, 200))
+        window.blit(score, (450, 500))
+        window.blit(tryagain, (tryagain_hit.x, tryagain_hit.y))
+        window.blit(mainmenu, (mainmenu_hit.x, mainmenu_hit.y))
+        pygame.display.update()
+
         # to check for quit
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        window.fill(BLACK)
-        window.blit(end, (200, 200))
-        window.blit(score, (400, 400))
-        pygame.display.update()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if tryagain_hit.collidepoint(pygame.mouse.get_pos()):
+                    print("This worked")
+                    run = False
+                    main()
+                if mainmenu_hit.collidepoint(pygame.mouse.get_pos()):
+                    run = False
+                    main_page()
+    print("This worked too")
     pygame.quit()
+
 
 # Title Page
 
 def main_page():
+    time.sleep(0.25)
+    global score
+    score = 0
     run = True
     while run:
         window.fill(BLACK)
@@ -87,8 +115,8 @@ def main_page():
             # To check if the left button is down
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if playbutton_hit.collidepoint(pygame.mouse.get_pos()):
+                    run = False
                     main()
-
         pygame.display.update()
     pygame.quit()
 
@@ -97,7 +125,9 @@ def main_page():
 
 def main():
     global balls, score, text_font, Scoreboard
+    score = 0
     mc_hit = pygame.Rect(400, 700, 50, 45)
+    mc_hit.x = 450
     clock = pygame.time.Clock()
     run = True
     while run:
@@ -111,16 +141,17 @@ def main():
         # Fireballs
         while len(balls) < max_balls:
             x = r.randrange(0, 900)
-            y = pygame.Rect(x, 0, 50, 45)
+            y = pygame.Rect(x, 0, 100, 90)
             balls.append(y)
         for i in balls:
             i.y += speedoffb
             if i.y > 900:
                 balls.remove(i)
-                score += max_balls**-1
+                score += max_balls ** -1
             if i.colliderect(mc_hit):
                 run = False
                 endgame(Scoreboard)
+
         # Scoreboard
 
         Scoreboard = text_font.render(f"{round(score)}", 1, (255, 255, 255))
@@ -132,17 +163,25 @@ def main():
 
         if key_pressed[pygame.K_a] or key_pressed[pygame.K_LEFT]:
             mc_hit.x -= 10
+
+        # To check if out of boundary
+        if mc_hit.x not in range(0, 900):
+            endgame(Scoreboard)
+            score = 0
+
         # To paint window and update
         game_window(mc_hit, mc, balls, Scoreboard)
         pygame.display.update()
     # to quit
     pygame.quit()
 
+
 # Start Page
 
 def Start():
     window.fill(BLACK)
     Title = text_font.render(f"{score}", 1, (255, 255, 255))
+
 
 if __name__ == "__main__":
     main_page()
