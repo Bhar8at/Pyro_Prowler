@@ -3,11 +3,10 @@ import pygame
 import os
 import random as r
 pygame.init()
-
+import time
 # Predefined functions
 
 def create_window(WIDTH, HEIGHT, CAPTION):
-    print(WIDTH, HEIGHT)
     window = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption(CAPTION)
     return window
@@ -24,7 +23,6 @@ text_font = pygame.font.SysFont("monospace", 50)
 
 # Sprites
 mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc.png"))  # Main character
-print(mc_c)
 mc = pygame.transform.scale(mc_c, (50, 45))
 
 # COLORS
@@ -36,10 +34,15 @@ balls = []
 ball = pygame.image.load(os.path.join("dodge_boms_assets", "fireball-png-pic-25.png"))
 ball = pygame.transform.scale(ball, (50, 45))
 
+# Main page sprites
+mainpage = pygame.image.load(os.path.join("dodge_boms_assets", "Mainpage.png"))
+playbutton = pygame.image.load(os.path.join("dodge_boms_assets","playbutton.png"))
+playbutton = pygame.transform.scale(playbutton, (200,100))
+
 
 # Window Paint
 
-def first_window(mc_hit, mcc, balls, score):
+def game_window(mc_hit, mcc, balls, score):
     global ball
     window.fill(BLACK)
     window.blit(mcc, (mc_hit.x, mc_hit.y))
@@ -67,11 +70,35 @@ def endgame(score):
         pygame.display.update()
     pygame.quit()
 
+# Title Page
+
+def main_page():
+    key_pressed = pygame.mouse.get_pressed()
+    print(key_pressed)
+    run = True
+    while run:
+        window.fill(BLACK)
+        window.blit(mainpage, (0, 0))
+        playbutton_hit = pygame.Rect(350, 700, 200, 100)
+        window.blit(playbutton, (playbutton_hit.x, playbutton_hit.y))
+
+        for event in pygame.event.get():
+            # To check for quit
+            if event.type == pygame.QUIT:
+                run = False
+            # To check if the left button is down
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if playbutton_hit.collidepoint(pygame.mouse.get_pos()):
+                    main()
+
+        pygame.display.update()
+    pygame.quit()
+
 
 # Game loop
 
 def main():
-    global balls, score, text_font
+    global balls, score, text_font, Scoreboard
     mc_hit = pygame.Rect(400, 700, 50, 45)
     clock = pygame.time.Clock()
     run = True
@@ -108,7 +135,7 @@ def main():
         if key_pressed[pygame.K_a] or key_pressed[pygame.K_LEFT]:
             mc_hit.x -= 10
         # To paint window and update
-        first_window(mc_hit, mc, balls, Scoreboard)
+        game_window(mc_hit, mc, balls, Scoreboard)
         pygame.display.update()
     # to quit
     pygame.quit()
@@ -120,4 +147,4 @@ def Start():
     Title = text_font.render(f"{score}", 1, (255, 255, 255))
 
 if __name__ == "__main__":
-    main()
+    main_page()
