@@ -73,8 +73,6 @@ def endgame(score):
 # Title Page
 
 def main_page():
-    key_pressed = pygame.mouse.get_pressed()
-    print(key_pressed)
     run = True
     while run:
         window.fill(BLACK)
