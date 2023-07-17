@@ -5,6 +5,7 @@ import random as r
 import time
 pygame.init()
 pygame.font.init()
+from pygame import mixer
 
 # Predefined functions
 
@@ -25,6 +26,9 @@ FPS = 60  # Frame rate
 score = 0
 text_font = pygame.font.SysFont("monospace", 50)
 
+# Background
+space = pygame.image.load(os.path.join("dodge_boms_assets", "space.png"))
+space = pygame.transform.scale(space, (900, 900))
 # Sprites
 mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc.png"))  # Main character
 mc = pygame.transform.scale(mc_c, (50, 45))
@@ -48,7 +52,7 @@ playbutton = pygame.transform.scale(playbutton, (200, 100))
 
 def game_window(mc_hit, mcc, balls, score):
     global ball
-    window.fill(BLACK)
+    window.blit(space, (0,0))
     window.blit(mcc, (mc_hit.x, mc_hit.y))
     for i in balls:
         window.blit(ball, (i.x, i.y))
@@ -66,10 +70,12 @@ mainmenu = pygame.transform.scale(mainmenu, (200, 100))
 
 
 def endgame(score):
+    mixer.music.load("dodge_boms_assets/gameover.wav")
+    mixer.music.play()
     global balls
     balls = []
-    tryagain_hit = pygame.Rect(365, 600, 200, 100)
-    mainmenu_hit = pygame.Rect(365, 800, 200, 100)
+    tryagain_hit = pygame.Rect(365, 600, 200, 50)
+    mainmenu_hit = pygame.Rect(365, 750, 200, 50)
     run = True
     while run:
         window.fill(BLACK)
@@ -87,9 +93,11 @@ def endgame(score):
                 if tryagain_hit.collidepoint(pygame.mouse.get_pos()):
                     print("This worked")
                     run = False
+                    mixer.music.stop()
                     main()
                 if mainmenu_hit.collidepoint(pygame.mouse.get_pos()):
                     run = False
+                    mixer.music.stop()
                     main_page()
     print("This worked too")
     pygame.quit()
@@ -98,12 +106,14 @@ def endgame(score):
 # Title Page
 
 def main_page():
+    mixer.music.load("dodge_boms_assets/mainmenubgm.wav")
+    mixer.music.play(-1)
     time.sleep(0.25)
     global score
     score = 0
     run = True
     while run:
-        window.fill(BLACK)
+        window.blit(space, (0,0))
         window.blit(mainpage, (0, 0))
         playbutton_hit = pygame.Rect(350, 700, 200, 100)
         window.blit(playbutton, (playbutton_hit.x, playbutton_hit.y))
@@ -116,6 +126,7 @@ def main_page():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if playbutton_hit.collidepoint(pygame.mouse.get_pos()):
                     run = False
+                    mixer.music.stop()
                     main()
         pygame.display.update()
     pygame.quit()
@@ -146,6 +157,8 @@ def main():
         for i in balls:
             i.y += speedoffb
             if i.y > 900:
+                ball_dodge_sound = mixer.Sound("dodge_boms_assets/scored.wav")
+                ball_dodge_sound.play()
                 balls.remove(i)
                 score += max_balls ** -1
             if i.colliderect(mc_hit):
