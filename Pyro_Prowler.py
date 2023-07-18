@@ -30,10 +30,11 @@ multiplier = 1
 
 # Background
 space = pygame.image.load(os.path.join("dodge_boms_assets", "space.png"))
-space = pygame.transform.scale(space, (900, 900))
+space = pygame.transform.scale(space, (1800, 1800))
 space_1 = space
 space_rage = pygame.image.load(os.path.join("dodge_boms_assets", "space_rage.png"))
 space_rage = pygame.transform.scale(space_rage, (900, 900))
+space_y = 0
 
 # Sprites
 mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc.png"))  # Main character
@@ -68,7 +69,6 @@ playbutton = pygame.transform.scale(playbutton, (200, 100))
 # Power up functions
 
 def activate_booster():
-    print("THIS HAPPENEED ENOWENFEWIFNWEIFONWF")
     mixer.music.load("dodge_boms_assets/rage.mp3")
     global spofmc, mc, FPS, multiplier, activate_booster_status, space, space_rage
     spofmc = 20
@@ -80,9 +80,9 @@ def activate_booster():
     space = space_rage
     mixer.music.play()
 
-def deactivate_booster():
-    print("THIS HAPPENEED ENOWENFEWIFNWEIFONWF")
-    global spofmc, mc, FPS, multiplier, space_1, space
+def deactivate_booster():   # Gets activated by mistake ?
+    global spofmc, mc, FPS, multiplier, space_1, space, activate_booster_status
+    activate_booster_status = False
     spofmc = 10
     FPS = 60
     multiplier = 1
@@ -95,8 +95,17 @@ def deactivate_booster():
 # Window Paint
 
 def game_window(mc_hit, mcc, balls, score,orbs):
-    global ball, continue_orb1, activate_orb1
-    window.blit(space, (0,0))
+    global ball, continue_orb1, activate_orb1, space_y
+    if space_y > -800:
+        print("alr")
+        space_y -= 5
+        window.blit(space, (0, space_y))
+    else:
+        print("it came here")
+        window.blit(space, (0, 0))
+        space_y = 0
+
+    window.blit(space, (0, space_y))
     window.blit(mcc, (mc_hit.x, mc_hit.y))
     for i in balls:
         window.blit(ball, (i.x, i.y))
@@ -158,7 +167,7 @@ def main_page():
     mixer.music.load("dodge_boms_assets/mainmenubgm.wav")
     mixer.music.play(-1)
     time.sleep(0.25)
-    global score
+    global score, space_y
     score = 0
     run = True
     while run:
@@ -253,12 +262,11 @@ def main():
 
         # To check if out of boundary
         if mc_hit.x not in range(0, 900):
-            endgame(Scoreboard)
             deactivate_booster()
             booster_timer = 0
-            print("This happened!")
             score = 0
             mixer.music.stop()
+            endgame(Scoreboard)
 
         # To paint window and update
         game_window(mc_hit, mc, balls, Scoreboard, orbs)
