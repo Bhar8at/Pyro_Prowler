@@ -26,10 +26,15 @@ FPS = 60  # Frame rate
 score = 0
 text_font = pygame.font.SysFont("monospace", 50)
 clock = pygame.time.Clock()
+multiplier = 1
 
 # Background
 space = pygame.image.load(os.path.join("dodge_boms_assets", "space.png"))
 space = pygame.transform.scale(space, (900, 900))
+space_1 = space
+space_rage = pygame.image.load(os.path.join("dodge_boms_assets", "space_rage.png"))
+space_rage = pygame.transform.scale(space_rage, (900, 900))
+
 # Sprites
 mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc.png"))  # Main character
 mc = pygame.transform.scale(mc_c, (50, 45))
@@ -47,9 +52,14 @@ ball = pygame.transform.scale(ball, (100, 90))
 # Orbs
 orb1_img = pygame.image.load(os.path.join("dodge_boms_assets", "orb1.png"))
 orb1_img = pygame.transform.scale(orb1_img, (100, 100))
+orbing = r.randrange(5,11)
 activate_orb1 = False
 continue_orb1 = False
-orb1_activator = r.randrange(2, 5)
+orbs = []
+booster_timer = 0
+activate_booster_status = False
+
+
 # Main page sprites
 mainpage = pygame.image.load(os.path.join("dodge_boms_assets", "Mainpage.png"))
 playbutton = pygame.image.load(os.path.join("dodge_boms_assets", "playbutton.png"))
@@ -59,35 +69,41 @@ playbutton = pygame.transform.scale(playbutton, (200, 100))
 
 def activate_booster():
     print("THIS HAPPENEED ENOWENFEWIFNWEIFONWF")
-    global spofmc, mc
+    mixer.music.load("dodge_boms_assets/rage.mp3")
+    global spofmc, mc, FPS, multiplier, activate_booster_status, space, space_rage
     spofmc = 20
-    mc = pygame.transform.scale(mc_c, (10, 10))
+    FPS = 80
+    multiplier = 2
+    mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc_rage.png"))  # Main character
+    mc = pygame.transform.scale(mc_c, (50, 45))
     activate_booster_status = True
+    space = space_rage
+    mixer.music.play()
+
+def deactivate_booster():
+    print("THIS HAPPENEED ENOWENFEWIFNWEIFONWF")
+    global spofmc, mc, FPS, multiplier, space_1, space
+    spofmc = 10
+    FPS = 60
+    multiplier = 1
+    mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc.png"))  # Main character
+    mc = pygame.transform.scale(mc_c, (50, 45))
+    space = space_1
+    mixer.music.stop()
+
 
 # Window Paint
 
-def game_window(mc_hit, mcc, balls, score):
+def game_window(mc_hit, mcc, balls, score,orbs):
     global ball, continue_orb1, activate_orb1
     window.blit(space, (0,0))
     window.blit(mcc, (mc_hit.x, mc_hit.y))
     for i in balls:
         window.blit(ball, (i.x, i.y))
     window.blit(score, (800, 800))
-    global activate_orb1
-    if activate_orb1:
-        global orb1_hit
-        orb1_hit = pygame.Rect(100, 100, r.randrange(0, 900), 0)
-        window.blit(orb1_img, (orb1_hit.x, orb1_hit.y))
-        activate_orb1 = False
-        continue_orb1 = True
-    if continue_orb1:
-        orb1_hit.y += 10
-        window.blit(orb1_img, (orb1_hit.x, orb1_hit.y))
-        if orb1_hit.colliderect(mc_hit):
-            print("IT HIT THE ORBN")
-            activate_booster()
-        if orb1_hit.y > 900:
-            continue_orb1 = False
+    for i in orbs:
+        window.blit(orb1_img, (i.x, i.y))
+
 
     pygame.display.update(())
 
@@ -169,7 +185,7 @@ def main_page():
 # Game loop
 
 def main():
-    global balls, score, text_font, Scoreboard
+    global balls, score, text_font, Scoreboard, activate_orb1, booster_timer, activate_booster_status
     score = 0
     mc_hit = pygame.Rect(400, 700, 50, 45)
     mc_hit.x = 450
@@ -194,16 +210,29 @@ def main():
                 ball_dodge_sound = mixer.Sound("dodge_boms_assets/scored.mp3")
                 ball_dodge_sound.play()
                 balls.remove(i)
-                score += max_balls ** -1
+                score += multiplier*max_balls ** -1
+                if activate_booster_status:
+                    booster_timer += 1
             if i.colliderect(mc_hit):
                 run = False
+                booster_timer = 0
+                deactivate_booster()
                 endgame(Scoreboard)
-
         # Power ups
-        if score % orb1_activator == 0 and score != 0:
-            global activate_orb1
-            activate_orb1 = True
 
+        if round(score) % orbing == 0 and score != 0 and len(orbs) < 1:
+            orbs.append(pygame.Rect(r.randrange(0, 900), 0, 50, 50))
+
+        for i in orbs:
+            i.y += 10
+            if i.y > 900:
+                orbs.remove(i)
+            if i.colliderect(mc_hit):
+                booster_timer = 0
+                activate_booster()
+        if booster_timer > 15:
+            deactivate_booster()
+            booster_timer = 0
         # Scoreboard
 
         Scoreboard = text_font.render(f"{round(score)}", 1, (255, 255, 255))
@@ -219,10 +248,13 @@ def main():
         # To check if out of boundary
         if mc_hit.x not in range(0, 900):
             endgame(Scoreboard)
+            deactivate_booster()
+            booster_timer = 0
+            print("This happened!")
             score = 0
 
         # To paint window and update
-        game_window(mc_hit, mc, balls, Scoreboard)
+        game_window(mc_hit, mc, balls, Scoreboard, orbs)
         pygame.display.update()
     # to quit
     pygame.quit()
