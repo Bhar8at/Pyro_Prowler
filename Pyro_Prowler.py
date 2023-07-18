@@ -234,7 +234,7 @@ def main():
                 booster_timer = 0
                 mixer.music.stop()
                 activate_booster()
-        if booster_timer > 15:
+        if booster_timer > 15 and activate_booster_status:
             deactivate_booster()
             booster_timer = 0
             mixer.music.load("dodge_boms_assets/gliding.mp3")
