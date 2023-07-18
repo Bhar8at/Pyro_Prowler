@@ -185,6 +185,8 @@ def main_page():
 # Game loop
 
 def main():
+    mixer.music.load("dodge_boms_assets/gliding.mp3")
+    mixer.music.play(-1)
     global balls, score, text_font, Scoreboard, activate_orb1, booster_timer, activate_booster_status
     score = 0
     mc_hit = pygame.Rect(400, 700, 50, 45)
@@ -217,6 +219,7 @@ def main():
                 run = False
                 booster_timer = 0
                 deactivate_booster()
+                mixer.music.stop()
                 endgame(Scoreboard)
         # Power ups
 
@@ -229,10 +232,13 @@ def main():
                 orbs.remove(i)
             if i.colliderect(mc_hit):
                 booster_timer = 0
+                mixer.music.stop()
                 activate_booster()
         if booster_timer > 15:
             deactivate_booster()
             booster_timer = 0
+            mixer.music.load("dodge_boms_assets/gliding.mp3")
+            mixer.music.play()
         # Scoreboard
 
         Scoreboard = text_font.render(f"{round(score)}", 1, (255, 255, 255))
@@ -252,6 +258,7 @@ def main():
             booster_timer = 0
             print("This happened!")
             score = 0
+            mixer.music.stop()
 
         # To paint window and update
         game_window(mc_hit, mc, balls, Scoreboard, orbs)
