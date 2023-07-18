@@ -18,13 +18,14 @@ def create_window(WIDTH, HEIGHT, CAPTION):
 
 
 # To create window w/ dimensions and caption
-window = create_window(900, 900, " bharat's game")
+window = create_window(900, 900, " Pyro Prowler ")
 
 # Variables declared
 speedoffb = 15
 FPS = 60  # Frame rate
 score = 0
 text_font = pygame.font.SysFont("monospace", 50)
+clock = pygame.time.Clock()
 
 # Background
 space = pygame.image.load(os.path.join("dodge_boms_assets", "space.png"))
@@ -32,6 +33,7 @@ space = pygame.transform.scale(space, (900, 900))
 # Sprites
 mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc.png"))  # Main character
 mc = pygame.transform.scale(mc_c, (50, 45))
+spofmc = 10
 
 # COLORS
 BLACK = (0, 0, 0)
@@ -42,21 +44,51 @@ balls = []
 ball = pygame.image.load(os.path.join("dodge_boms_assets", "fireball-png-pic-25.png"))
 ball = pygame.transform.scale(ball, (100, 90))
 
+# Orbs
+orb1_img = pygame.image.load(os.path.join("dodge_boms_assets", "orb1.png"))
+orb1_img = pygame.transform.scale(orb1_img, (100, 100))
+activate_orb1 = False
+continue_orb1 = False
+orb1_activator = r.randrange(2, 5)
 # Main page sprites
 mainpage = pygame.image.load(os.path.join("dodge_boms_assets", "Mainpage.png"))
 playbutton = pygame.image.load(os.path.join("dodge_boms_assets", "playbutton.png"))
 playbutton = pygame.transform.scale(playbutton, (200, 100))
 
+# Power up functions
+
+def activate_booster():
+    print("THIS HAPPENEED ENOWENFEWIFNWEIFONWF")
+    global spofmc, mc
+    spofmc = 20
+    mc = pygame.transform.scale(mc_c, (10, 10))
+    activate_booster_status = True
 
 # Window Paint
 
 def game_window(mc_hit, mcc, balls, score):
-    global ball
+    global ball, continue_orb1, activate_orb1
     window.blit(space, (0,0))
     window.blit(mcc, (mc_hit.x, mc_hit.y))
     for i in balls:
         window.blit(ball, (i.x, i.y))
     window.blit(score, (800, 800))
+    global activate_orb1
+    if activate_orb1:
+        global orb1_hit
+        orb1_hit = pygame.Rect(100, 100, r.randrange(0, 900), 0)
+        window.blit(orb1_img, (orb1_hit.x, orb1_hit.y))
+        activate_orb1 = False
+        continue_orb1 = True
+    if continue_orb1:
+        orb1_hit.y += 10
+        window.blit(orb1_img, (orb1_hit.x, orb1_hit.y))
+        if orb1_hit.colliderect(mc_hit):
+            print("IT HIT THE ORBN")
+            activate_booster()
+        if orb1_hit.y > 900:
+            continue_orb1 = False
+
     pygame.display.update(())
 
 
@@ -70,14 +102,14 @@ mainmenu = pygame.transform.scale(mainmenu, (200, 100))
 
 
 def endgame(score):
-    mixer.music.load("dodge_boms_assets/gameover.wav")
-    mixer.music.play()
+    mixer.Sound("dodge_boms_assets/gameover.wav").play()
     global balls
     balls = []
-    tryagain_hit = pygame.Rect(365, 600, 200, 50)
-    mainmenu_hit = pygame.Rect(365, 750, 200, 50)
+    tryagain_hit = pygame.Rect(365, 600, 200, 100)
+    mainmenu_hit = pygame.Rect(365, 750, 200, 100)
     run = True
     while run:
+        clock.tick(FPS)
         window.fill(BLACK)
         window.blit(end, (200, 200))
         window.blit(score, (450, 500))
@@ -89,9 +121,10 @@ def endgame(score):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if int(event.type) == 1025 and event.button == 1:
+                print("WORKED", int(event.type)) # THIs PRINT COMMAND IS NECESARY FOR GAME TO WORK FOR SOME REASON IDK WHY
                 if tryagain_hit.collidepoint(pygame.mouse.get_pos()):
-                    print("This worked")
+                    print("This worked too ig")
                     run = False
                     mixer.music.stop()
                     main()
@@ -113,6 +146,7 @@ def main_page():
     score = 0
     run = True
     while run:
+        clock.tick(FPS)
         window.blit(space, (0,0))
         window.blit(mainpage, (0, 0))
         playbutton_hit = pygame.Rect(350, 700, 200, 100)
@@ -157,13 +191,18 @@ def main():
         for i in balls:
             i.y += speedoffb
             if i.y > 900:
-                ball_dodge_sound = mixer.Sound("dodge_boms_assets/scored.wav")
+                ball_dodge_sound = mixer.Sound("dodge_boms_assets/scored.mp3")
                 ball_dodge_sound.play()
                 balls.remove(i)
                 score += max_balls ** -1
             if i.colliderect(mc_hit):
                 run = False
                 endgame(Scoreboard)
+
+        # Power ups
+        if score % orb1_activator == 0 and score != 0:
+            global activate_orb1
+            activate_orb1 = True
 
         # Scoreboard
 
@@ -172,10 +211,10 @@ def main():
         # Keyboard movements for mc
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_d] or key_pressed[pygame.K_RIGHT]:
-            mc_hit.x += 10
+            mc_hit.x += spofmc
 
         if key_pressed[pygame.K_a] or key_pressed[pygame.K_LEFT]:
-            mc_hit.x -= 10
+            mc_hit.x -= spofmc
 
         # To check if out of boundary
         if mc_hit.x not in range(0, 900):
