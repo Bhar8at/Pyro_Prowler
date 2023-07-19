@@ -34,7 +34,10 @@ space = pygame.transform.scale(space, (1800, 1800))
 space_1 = space
 space_rage = pygame.image.load(os.path.join("dodge_boms_assets", "space_rage.png"))
 space_rage = pygame.transform.scale(space_rage, (900, 900))
-space_y = 0
+space_y = [0,900,1800]
+scroll = 0
+speedofbg = 10
+
 
 # Sprites
 mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc.png"))  # Main character
@@ -44,11 +47,12 @@ spofmc = 10
 # COLORS
 BLACK = (0, 0, 0)
 
-# Bullets
+# FIREBALLS
 max_balls = 3
 balls = []
 ball = pygame.image.load(os.path.join("dodge_boms_assets", "fireball-png-pic-25.png"))
 ball = pygame.transform.scale(ball, (100, 90))
+
 
 # Orbs
 orb1_img = pygame.image.load(os.path.join("dodge_boms_assets", "orb1.png"))
@@ -73,7 +77,7 @@ def activate_booster():
     global spofmc, mc, FPS, multiplier, activate_booster_status, space, space_rage
     spofmc = 20
     FPS = 80
-    multiplier = 2
+    multiplier = 5
     mc_c = pygame.image.load(os.path.join("dodge_boms_assets", "mc_rage.png"))  # Main character
     mc = pygame.transform.scale(mc_c, (50, 45))
     activate_booster_status = True
@@ -95,17 +99,13 @@ def deactivate_booster():   # Gets activated by mistake ?
 # Window Paint
 
 def game_window(mc_hit, mcc, balls, score,orbs):
-    global ball, continue_orb1, activate_orb1, space_y
-    if space_y > -800:
-        print("alr")
-        space_y -= 5
-        window.blit(space, (0, space_y))
-    else:
-        print("it came here")
-        window.blit(space, (0, 0))
-        space_y = 0
-
-    window.blit(space, (0, space_y))
+    global ball, continue_orb1, activate_orb1, space_y, scroll, speedofbg
+    window.blit(space, (0, 0+scroll))
+    window.blit(space, (0, -900+scroll))
+    window.blit(space, (0, -1800+scroll))
+    if scroll == 900:
+        scroll = 0
+    scroll += speedofbg
     window.blit(mcc, (mc_hit.x, mc_hit.y))
     for i in balls:
         window.blit(ball, (i.x, i.y))
@@ -196,7 +196,7 @@ def main_page():
 def main():
     mixer.music.load("dodge_boms_assets/gliding.mp3")
     mixer.music.play(-1)
-    global balls, score, text_font, Scoreboard, activate_orb1, booster_timer, activate_booster_status
+    global balls, score, text_font, Scoreboard, activate_orb1, booster_timer, activate_booster_status, FPS, speedoffb, speedofbg
     score = 0
     mc_hit = pygame.Rect(400, 700, 50, 45)
     mc_hit.x = 450
@@ -230,6 +230,11 @@ def main():
                 deactivate_booster()
                 mixer.music.stop()
                 endgame(Scoreboard)
+
+        # Hype from song
+        if score > 13:
+            FPS = 65
+            speedoffb = 15
         # Power ups
 
         if round(score) % orbing == 0 and score != 0 and len(orbs) < 1:
@@ -279,7 +284,7 @@ def main():
 
 def Start():
     window.fill(BLACK)
-    Title = text_font.render(f"{score}", 1, (255, 255, 255))
+    text_font.render(f"{score}", 1, (255, 255, 255))
 
 
 if __name__ == "__main__":
